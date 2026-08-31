@@ -1,0 +1,19 @@
+{
+  "name": "url_shortener",
+  "version": "1.0.0",
+  "description": "This application use to short the url ",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "test": "nodemon src/server.js"
+  },
+  "author": "vikash",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "nodemon": "^3.1.14",
+    "pg": "^8.23.0",
+    "redis": "^6.2.1"
+  }
+}
