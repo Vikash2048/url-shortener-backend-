@@ -36,6 +36,8 @@ router.post("/shorten", async (req, res) => {
 
 // Get original URL from short code
 router.get("/:shortCode", async (req, res) => {
+    // console.log(`Server PID: ${process.pid}`);
+    console.log("Handled by:", process.env.HOSTNAME);
     try {
         const { shortCode } = req.params;
 
