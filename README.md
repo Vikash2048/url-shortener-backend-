@@ -42,3 +42,30 @@ To cache 20% of these requests, we will need ~70GB of memory.
 # short url with random number
 # base62 conversion
 # MD5 hashing
+
+
+             Client
+                ↓
+             HAProxy
+          ↙     ↓     ↘
+       app1    app2    app3
+         ↓       ↓       ↓
+       Redis ← shared → Redis
+                ↓
+           PostgreSQL
+
+           
+1. PostgreSQL
+      ↓
+2. Redis caching
+      ↓
+3. Multiple Node instances
+      ↓
+4. HAProxy load balancing
+      ↓
+5. Active health checks
+      ↓
+6. Failure detection + recovery
+      ↓
+7. Graceful shutdown
+

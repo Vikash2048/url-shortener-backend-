@@ -21,6 +21,15 @@ app.get("/health", (req, res) => {
     res.status(200).json({ status: "ok"});
 });
 
+app.get("/slow", async (req, res) => {
+    console.log("Slow request started");
+
+    await new Promise(resolve => setTimeout(resolve, 10000));
+
+    console.log("Slow request finished");
+    res.json({ message: "Slow request completed"});
+})
+
 app.use((req, res, next) => {
     console.log("REQUEST:", process.env.HOSTNAME, req.method, req.originalUrl);
     next();
@@ -34,6 +43,20 @@ app.use((req, res) => {
     res.status(404).json({ error: "Route not found" });
 });
 
-app.listen(process.env.APP_PORT||PORT, ()=> {
+const server = app.listen(process.env.APP_PORT||PORT, ()=> {
     console.log("Server listening on port :", process.env.APP_PORT||PORT);
 })
+
+process.on("SIGTERM", ()=> {
+    console.log("SIGTERM received, Shutting down...");
+
+    server.close(() => {
+        console.log("Server closed.");
+        process.exit(0);
+    });
+
+    setTimeout(() => {
+        console.log("Force shutdown");
+        process.exit(1);
+    }, 10000);
+});

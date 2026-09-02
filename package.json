@@ -5,7 +5,7 @@
   "main": "src/server.js",
   "type": "module",
   "scripts": {
-    "test": "nodemon src/server.js"
+    "test": "node src/server.js"
   },
   "author": "vikash",
   "license": "ISC",
