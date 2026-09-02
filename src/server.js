@@ -14,6 +14,11 @@ app.get("/", (req, res) => {
     res.json({ message: "Welcome to URL Shortener API" });
 });
 
+app.use((req, res, next) => {
+    console.log("REQUEST:", process.env.HOSTNAME, req.method, req.originalUrl);
+    next();
+});
+
 // Route to different endpoints
 app.use("/api/v1/urls", urlRoutes);
 
