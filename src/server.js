@@ -14,6 +14,13 @@ app.get("/", (req, res) => {
     res.json({ message: "Welcome to URL Shortener API" });
 });
 
+app.get("/health", (req, res) => {
+    if (process.env.HEALTH_FAIL === "true") {
+        return res.status(500).json({ status: "failed"});
+    }
+    res.status(200).json({ status: "ok"});
+});
+
 app.use((req, res, next) => {
     console.log("REQUEST:", process.env.HOSTNAME, req.method, req.originalUrl);
     next();
