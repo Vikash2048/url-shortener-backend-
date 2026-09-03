@@ -2,16 +2,21 @@ import express from "express";
 import dotenv from 'dotenv';
 import urlRoutes from "./routes/urls.js";
 
+
 dotenv.config();
 
 const PORT = 4000;
-
 const app = express();
+const APP_VERSION = process.env.APP_VERSION || "v1";
 
 app.use(express.json());
 
 app.get("/", (req, res) => {
-    res.json({ message: "Welcome to URL Shortener API" });
+    console.log({ version: APP_VERSION})
+    res.json({ 
+        message: "Welcome to URL Shortener API",
+        version: APP_VERSION
+    });
 });
 
 app.get("/health", (req, res) => {

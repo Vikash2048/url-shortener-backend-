@@ -50,6 +50,7 @@ services:
   app1:
     build: .
     environment:
+      APP_VERSION: "v2"
       DB_USER: Admin
       DB_PASSWORD: Admin_123
       DB_HOST: postgres
@@ -75,6 +76,7 @@ services:
   app2:
     build: .
     environment:
+      APP_VERSION: "v2"
       DB_USER: Admin
       DB_PASSWORD: Admin_123
       DB_HOST: postgres
@@ -101,6 +103,7 @@ services:
   app3:
     build: .
     environment:
+      APP_VERSION: "v2"
       DB_USER: Admin
       DB_PASSWORD: Admin_123
       DB_HOST: postgres

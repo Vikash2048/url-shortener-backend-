@@ -54,7 +54,7 @@ To cache 20% of these requests, we will need ~70GB of memory.
                 ↓
            PostgreSQL
 
-           
+
 1. PostgreSQL
       ↓
 2. Redis caching
@@ -68,4 +68,21 @@ To cache 20% of these requests, we will need ~70GB of memory.
 6. Failure detection + recovery
       ↓
 7. Graceful shutdown
+
+PostgreSQL
+    ↓
+Redis cache
+    ↓
+3 Node.js instances
+    ↓
+HAProxy
+    ↓
+Active health checks
+    ↓
+Failure detection + recovery
+    ↓
+Graceful shutdown
+    ↓
+Rolling / zero-downtime deployment
+
 
