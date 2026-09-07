@@ -86,3 +86,24 @@ Graceful shutdown
 Rolling / zero-downtime deployment
 
 
+✅ Node.js + PostgreSQL
+✅ Load testing
+✅ PostgreSQL indexing
+✅ Redis caching
+✅ Horizontal Node.js scaling
+✅ Load balancing
+✅ Health checks
+✅ HAProxy
+✅ Graceful shutdown
+✅ Rolling deployment
+
+        ↓ NEXT
+
+➡️ PostgreSQL Connection Pooling
+➡️ Read Replicas
+➡️ Read/Write Splitting
+➡️ DB Failure / Failover
+➡️ Redis Scaling
+➡️ HAProxy tuning
+➡️ Observability
+➡️ Final system-design architecture
