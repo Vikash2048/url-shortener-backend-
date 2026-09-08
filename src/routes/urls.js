@@ -1,7 +1,8 @@
 import express from "express";
-import {writePool, readPool} from "../db.js";
+import {writePool, readPool, shard1, shard2, shard3} from "../db.js";
 import redisClient from "../redis.js";
 import dotenv from "dotenv";
+import { getShard } from "../sharding.js";
 
 dotenv.config();
 
@@ -14,12 +15,19 @@ router.post("/shorten", async (req, res) => {
         console.log("OriginalURL : ", originalUrl);
 
         // generate short code for now using temp short code
-        const shortCode = Math.random().toString(36).substring(2,8);    
+        const shortCode = Math.random().toString(36).substring(2,8); 
+        
+        // decide which shard owns this shortCode
+        const shard = getShard(shortCode);
 
         // Insert original URL and short code into database
         const query = "INSERT INTO urls (original_url, short_code) VALUES ($1, $2) RETURNING *";
         // const result = await pool.query(query, [originalUrl, shortCode]);
-        const result = await writePool.query(query, [originalUrl, shortCode]);
+        // const result = await writePool.query(query, [originalUrl, shortCode]);
+        const result = await shard.query(query, [originalUrl, shortCode]);
+
+        //redis 
+        await redisClient.set(shortCode, originalUrl, {EX:3600});
 
         // res.json({
         //     message: "Create short URL endpoint",
@@ -43,6 +51,7 @@ router.get("/:shortCode", async (req, res) => {
   console.log("Handled by:", process.env.HOSTNAME);
   try {
     const { shortCode } = req.params;
+    console.log("shortCode: ", shortCode)
 
     // Check Redis cache first
     const cachedUrl = await redisClient.get(shortCode);
@@ -53,9 +62,13 @@ router.get("/:shortCode", async (req, res) => {
       console.log("cache miss");
     }
 
+    //find the correct shard
+    const shard = getShard(shortCode);
+
     // Query database to find the short code
     const query = "SELECT original_url FROM urls WHERE short_code = $1";
-    const result = await readPool.query(query, [shortCode]);
+    // const result = await readPool.query(query, [shortCode]);
+    const result = await shard.query(query, [shortCode]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Short code not found" });
