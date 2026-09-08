@@ -6,32 +6,54 @@ dotenv.config();
 
 const { Pool } = pg;
 
-const pool = new Pool({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
+// const pool = new Pool({
+//     host: process.env.DB_HOST,
+//     port: process.env.DB_PORT,
+//     user: process.env.DB_USER,
+//     password: process.env.DB_PASSWORD,
+//     database: process.env.DB_NAME,
+//     max: 2,
+//     idleTimeoutMillis: 30000,
+//     connectionTimeoutMillis: 2000
+// });
+
+const writePool = new Pool({
+    host: process.env.DB_PRIMARY_HOST,
+    port: process.env.DB_PRIMARY_PORT,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    max: 2,
+    max: 10,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000
 });
 
-setInterval(() => {
-    console.log(
-        "Pool stats:",
-        "total =", pool.totalCount,
-        "idle =", pool.idleCount,
-        "waiting =", pool.waitingCount
-    );
-}, 5000);
-
-pool.on("connect", () => {
-    console.log("New PostgreSQL connection created");
+const readPool = new Pool({
+    host: process.env.DB_REPLICA_HOST,
+    port: process.env.DB_REPLICA_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000
 });
 
-pool.on("remove", () => {
-    console.log("PostgreSQL connection removed");
-});
+// setInterval(() => {
+//     console.log(
+//         "Pool stats:",
+//         "total =", pool.totalCount,
+//         "idle =", pool.idleCount,
+//         "waiting =", pool.waitingCount
+//     );
+// }, 5000);
 
-export default pool;
+// pool.on("connect", () => {
+//     console.log("New PostgreSQL connection created");
+// });
+
+// pool.on("remove", () => {
+//     console.log("PostgreSQL connection removed");
+// });
+
+export { readPool, writePool };

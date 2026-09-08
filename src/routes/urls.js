@@ -1,5 +1,5 @@
 import express from "express";
-import pool from "../db.js";
+import {writePool, readPool} from "../db.js";
 import redisClient from "../redis.js";
 import dotenv from "dotenv";
 
@@ -18,7 +18,8 @@ router.post("/shorten", async (req, res) => {
 
         // Insert original URL and short code into database
         const query = "INSERT INTO urls (original_url, short_code) VALUES ($1, $2) RETURNING *";
-        const result = await pool.query(query, [originalUrl, shortCode]);
+        // const result = await pool.query(query, [originalUrl, shortCode]);
+        const result = await writePool.query(query, [originalUrl, shortCode]);
 
         // res.json({
         //     message: "Create short URL endpoint",
@@ -54,7 +55,7 @@ router.get("/:shortCode", async (req, res) => {
 
     // Query database to find the short code
     const query = "SELECT original_url FROM urls WHERE short_code = $1";
-    const result = await pool.query(query, [shortCode]);
+    const result = await readPool.query(query, [shortCode]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Short code not found" });

@@ -1,22 +1,70 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: url_shortener_db
+  postgres-primary:
+    image: postgres:16
+    container_name: postgres-primary
+
     environment:
       POSTGRES_USER: Admin
       POSTGRES_PASSWORD: Admin_123
       POSTGRES_DB: url_shortener_db
+
     ports:
-      - "5432:5432"
+      - "5433:5432"
+
+    command:
+      - postgres
+      - -c
+      - wal_level=replica
+      - -c
+      - max_wal_senders=10
+      - -c
+      - max_replication_slots=10
+      - -c
+      - hba_file=/etc/postgresql-custom/pg_hba.conf
+
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - primary_data:/var/lib/postgresql/data
+      - ./postgres-replication/primary/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./postgres-replication/primary/pg_hba.conf:/etc/postgresql-custom/pg_hba.conf:ro
+
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U Admin"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  postgres-replica:
+    image: postgres:16
+    container_name: postgres-replica
+    user: postgres
+
+    environment:
+      PRIMARY_HOST: postgres-primary
+      PRIMARY_PORT: 5432
+      REPLICATOR_USER: replicator
+      REPLICATOR_PASSWORD: replicator_password
+
+    ports:
+      - "5434:5432"
+
+    entrypoint: ["bash", "/docker-entrypoint-replica.sh"]
+
+    volumes:
+      - replica_data:/var/lib/postgresql/data
+      - ./postgres-replication/replica/init-replica.sh:/docker-entrypoint-replica.sh:ro
+
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U Admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   redis:
     image: redis:latest
@@ -53,15 +101,21 @@ services:
       APP_VERSION: "v2"
       DB_USER: Admin
       DB_PASSWORD: Admin_123
-      DB_HOST: postgres
-      DB_PORT: 5432
       DB_NAME: url_shortener_db
       REDIS_HOST: redis
       REDIS_PORT: 6379
+
+      DB_PRIMARY_HOST: postgres-primary
+      DB_PRIMARY_PORT: 5432
+
+      DB_REPLICA_HOST: postgres-replica
+      DB_REPLICA_PORT: 5432
     expose:
       - "3000"
     depends_on:
-      postgres:
+      postgres-primary:
+        condition: service_healthy
+      postgres-replica:
         condition: service_healthy
       redis:
         condition: service_started
@@ -79,16 +133,23 @@ services:
       APP_VERSION: "v2"
       DB_USER: Admin
       DB_PASSWORD: Admin_123
-      DB_HOST: postgres
-      DB_PORT: 5432
       DB_NAME: url_shortener_db
       REDIS_HOST: redis
       REDIS_PORT: 6379
       HEALTH_FAIL: "false"
+
+      DB_PRIMARY_HOST: postgres-primary
+      DB_PRIMARY_PORT: 5432
+
+      DB_REPLICA_HOST: postgres-replica
+      DB_REPLICA_PORT: 5432
+
     expose:
       - "3000"
     depends_on:
-      postgres:
+      postgres-primary:
+        condition: service_healthy
+      postgres-replica:
         condition: service_healthy
       redis:
         condition: service_started
@@ -106,15 +167,23 @@ services:
       APP_VERSION: "v2"
       DB_USER: Admin
       DB_PASSWORD: Admin_123
-      DB_HOST: postgres
-      DB_PORT: 5432
       DB_NAME: url_shortener_db
       REDIS_HOST: redis
       REDIS_PORT: 6379
+
+
+      DB_PRIMARY_HOST: postgres-primary
+      DB_PRIMARY_PORT: 5432
+
+      DB_REPLICA_HOST: postgres-replica
+      DB_REPLICA_PORT: 5432
+
     expose:
       - "3000"
     depends_on:
-      postgres:
+      postgres-primary:
+        condition: service_healthy
+      postgres-replica:
         condition: service_healthy
       redis:
         condition: service_started
@@ -152,4 +221,5 @@ services:
   #   command: npm run test
 
 volumes:
-  postgres_data:
+  primary_data:
+  replica_data:
