@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 echo "Waiting for Shard 1..."
@@ -23,5 +22,10 @@ PGPASSWORD=shard1_replicator_password pg_basebackup \
     -R
 
 echo "Base backup completed."
+
+chmod 700 /var/lib/postgresql/data
+chown -R postgres:postgres /var/lib/postgresql/data
+
+echo "Permissions fixed."
 
 exec postgres

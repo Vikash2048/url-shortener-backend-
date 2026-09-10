@@ -25,6 +25,14 @@ const shard1 = new Pool({
     database: "url_shard_1"
 })
 
+const shard1Replica = new Pool({
+    host: "postgres-shard-1-replica",
+    port: 5432,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: "url_shard_1"
+});
+
 const shard2 = new Pool({
     host: "postgres-shard-2",
     port: 5432,
@@ -80,4 +88,4 @@ const readPool = new Pool({
 //     console.log("PostgreSQL connection removed");
 // });
 
-export { readPool, writePool, shard1, shard2, shard3 };
+export { readPool, writePool, shard1, shard2, shard3, shard1Replica };

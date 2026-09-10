@@ -8,6 +8,7 @@ dotenv.config();
 const PORT = 4000;
 const app = express();
 const APP_VERSION = process.env.APP_VERSION || "v1";
+let isReady = true;
 
 app.use(express.json());
 
@@ -19,12 +20,22 @@ app.get("/", (req, res) => {
     });
 });
 
+// app.get("/health", (req, res) => {
+//     if (process.env.HEALTH_FAIL === "true") {
+//         return res.status(500).json({ status: "failed"});
+//     }
+//     res.status(200).json({ status: "ok"});
+// });
+
 app.get("/health", (req, res) => {
-    if (process.env.HEALTH_FAIL === "true") {
-        return res.status(500).json({ status: "failed"});
+    if (!isReady) {
+        return res.status(503).json({ status: "shutting_down"});
     }
+
     res.status(200).json({ status: "ok"});
 });
+
+
 
 app.get("/slow", async (req, res) => {
     console.log("Slow request started");
@@ -53,15 +64,15 @@ const server = app.listen(process.env.APP_PORT||PORT, ()=> {
 })
 
 process.on("SIGTERM", ()=> {
-    console.log("SIGTERM received, Shutting down...");
+    console.log("SIGTERM received, making app unready...");
+    isReady = false;
 
-    server.close(() => {
-        console.log("Server closed.");
-        process.exit(0);
-    });
-
+    
     setTimeout(() => {
-        console.log("Force shutdown");
-        process.exit(1);
-    }, 10000);
+        console.log("shutting down...");
+        server.close(() => {
+            console.log("Server closed.");
+            process.exit(0);
+        });
+    }, 2000);
 });
